@@ -10,6 +10,12 @@ import PatientRegister from "./pages/patient/PatientRegister";
 import PatientLogin from "./pages/patient/PatientLogin";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientProfile from "./pages/patient/PatientProfile";
+import HospitalRegister from "./pages/hospital/HospitalRegister";
+import HospitalLogin from "./pages/hospital/HospitalLogin";
+import HospitalDashboard from "./pages/hospital/HospitalDashboard";
+import QRScanner from "./pages/hospital/QRScanner";
+import PatientHistory from "./pages/hospital/PatientHistory";
+import UploadReport from "./pages/hospital/UploadReport";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -23,6 +29,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            {/* Patient Routes */}
             <Route path="/patient/register" element={<PatientRegister />} />
             <Route path="/patient/login" element={<PatientLogin />} />
             <Route 
@@ -38,6 +45,41 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['patient']}>
                   <PatientProfile />
+                </ProtectedRoute>
+              } 
+            />
+            {/* Hospital Routes */}
+            <Route path="/hospital/register" element={<HospitalRegister />} />
+            <Route path="/hospital/login" element={<HospitalLogin />} />
+            <Route 
+              path="/hospital/dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['hospital']}>
+                  <HospitalDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/hospital/scan" 
+              element={
+                <ProtectedRoute allowedRoles={['hospital']}>
+                  <QRScanner />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/hospital/patient/:patientId" 
+              element={
+                <ProtectedRoute allowedRoles={['hospital']}>
+                  <PatientHistory />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/hospital/upload" 
+              element={
+                <ProtectedRoute allowedRoles={['hospital']}>
+                  <UploadReport />
                 </ProtectedRoute>
               } 
             />
