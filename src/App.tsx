@@ -16,6 +16,8 @@ import HospitalDashboard from "./pages/hospital/HospitalDashboard";
 import QRScanner from "./pages/hospital/QRScanner";
 import PatientHistory from "./pages/hospital/PatientHistory";
 import UploadReport from "./pages/hospital/UploadReport";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -80,6 +82,16 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['hospital']}>
                   <UploadReport />
+                </ProtectedRoute>
+              } 
+            />
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
                 </ProtectedRoute>
               } 
             />
