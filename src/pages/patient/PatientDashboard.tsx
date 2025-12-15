@@ -13,9 +13,12 @@ import {
   Clock,
   Building2,
   ChevronRight,
-  QrCode
+  QrCode,
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { getSignedFileUrl } from '@/lib/storage';
+import { toast } from 'sonner';
 
 interface MedicalRecord {
   id: string;
@@ -34,6 +37,26 @@ const PatientDashboard = () => {
   const { profile } = useAuth();
   const [records, setRecords] = useState<MedicalRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const handleDownload = async (record: MedicalRecord) => {
+    if (!record.file_url) return;
+    
+    setDownloadingId(record.id);
+    try {
+      const signedUrl = await getSignedFileUrl(record.file_url);
+      if (signedUrl) {
+        window.open(signedUrl, '_blank');
+      } else {
+        toast.error('Failed to generate download link');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download file');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -199,12 +222,15 @@ const PatientDashboard = () => {
                           <Button
                             variant="default"
                             size="sm"
-                            asChild
+                            onClick={() => handleDownload(record)}
+                            disabled={downloadingId === record.id}
                           >
-                            <a href={record.file_url} target="_blank" rel="noopener noreferrer" download>
+                            {downloadingId === record.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
                               <Download className="w-4 h-4" />
-                              Download
-                            </a>
+                            )}
+                            Download
                           </Button>
                         )}
                       </div>

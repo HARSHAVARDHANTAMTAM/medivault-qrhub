@@ -166,17 +166,14 @@ const UploadReport = () => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${selectedPatient.id}/${Date.now()}.${fileExt}`;
         
-        const { error: uploadError, data: uploadData } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('medical-files')
           .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
-          .from('medical-files')
-          .getPublicUrl(fileName);
-        
-        fileUrl = urlData.publicUrl;
+        // Store the file path (not public URL) for secure signed URL generation
+        fileUrl = fileName;
       }
 
       // Create medical record
