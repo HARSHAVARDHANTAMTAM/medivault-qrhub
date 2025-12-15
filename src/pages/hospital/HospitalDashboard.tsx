@@ -100,7 +100,7 @@ const HospitalDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <Link
             to="/hospital/scan"
             className="group p-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all card-shadow hover:elevated-shadow"
@@ -130,6 +130,24 @@ const HospitalDashboard = () => {
                   Upload Report
                 </h3>
                 <p className="text-sm text-muted-foreground">Add medical records</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+          </Link>
+
+          <Link
+            to="/hospital/profile"
+            className="group p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-all card-shadow hover:elevated-shadow"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-foreground" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  Hospital Profile
+                </h3>
+                <p className="text-sm text-muted-foreground">View & edit info</p>
               </div>
               <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>

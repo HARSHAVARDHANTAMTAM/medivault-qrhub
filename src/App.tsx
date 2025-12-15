@@ -16,6 +16,7 @@ import HospitalDashboard from "./pages/hospital/HospitalDashboard";
 import QRScanner from "./pages/hospital/QRScanner";
 import PatientHistory from "./pages/hospital/PatientHistory";
 import UploadReport from "./pages/hospital/UploadReport";
+import HospitalProfile from "./pages/hospital/HospitalProfile";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -82,6 +83,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['hospital']}>
                   <UploadReport />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/hospital/profile" 
+              element={
+                <ProtectedRoute allowedRoles={['hospital']}>
+                  <HospitalProfile />
                 </ProtectedRoute>
               } 
             />
