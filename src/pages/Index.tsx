@@ -249,6 +249,18 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Admin Access */}
+      <section className="py-6 bg-background border-t border-border">
+        <div className="container px-4 text-center">
+          <Link 
+            to="/admin/login" 
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            Admin Portal →
+          </Link>
+        </div>
+      </section>
     </MainLayout>
   );
 };
