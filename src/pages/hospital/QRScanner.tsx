@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { QrCode, Camera, Search, ArrowLeft, RefreshCw } from 'lucide-react';
+import { QrCode, Camera, Search, ArrowLeft, RefreshCw, Upload } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 const QRScanner = () => {
@@ -13,8 +13,10 @@ const QRScanner = () => {
   const [scanning, setScanning] = useState(false);
   const [manualId, setManualId] = useState('');
   const [hasCamera, setHasCamera] = useState(true);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check for camera permissions
@@ -97,6 +99,42 @@ const QRScanner = () => {
     navigate(`/hospital/patient/${manualId.trim()}`);
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    setIsProcessingFile(true);
+    
+    try {
+      const html5QrCode = new Html5Qrcode("qr-file-reader");
+      const result = await html5QrCode.scanFile(file, true);
+      
+      // Extract patient ID from QR data
+      let patientId = result;
+      if (result.startsWith('MEDIVAULT:')) {
+        patientId = result.replace('MEDIVAULT:', '');
+      }
+      
+      toast.success('QR Code scanned successfully!');
+      navigate(`/hospital/patient/${patientId}`);
+    } catch (error) {
+      console.error('File scan error:', error);
+      toast.error('Could not read QR code from image. Please try another image or use manual entry.');
+    } finally {
+      setIsProcessingFile(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   return (
     <MainLayout>
       <div className="container py-8 px-4 max-w-2xl mx-auto">
@@ -153,10 +191,49 @@ const QRScanner = () => {
               </div>
               <h3 className="text-lg font-medium text-foreground mb-2">Camera Not Available</h3>
               <p className="text-muted-foreground">
-                Please allow camera access or use manual Patient ID entry below.
+                Please allow camera access or use the upload/manual entry options below.
               </p>
             </div>
           )}
+        </div>
+
+        {/* Upload QR Code */}
+        <div className="bg-card rounded-2xl border border-border p-6 card-shadow mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Upload className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Upload QR Code</h2>
+          </div>
+          <p className="text-muted-foreground text-sm mb-4">
+            Upload a QR code image from your device.
+          </p>
+          <div id="qr-file-reader" style={{ display: 'none' }} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+            id="qr-file-input"
+          />
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            variant="outline"
+            size="lg"
+            className="w-full"
+            disabled={isProcessingFile}
+          >
+            {isProcessingFile ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4 mr-2" />
+                Upload QR Image
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Manual Entry */}
