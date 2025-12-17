@@ -10,6 +10,7 @@ import PatientRegister from "./pages/patient/PatientRegister";
 import PatientLogin from "./pages/patient/PatientLogin";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientProfile from "./pages/patient/PatientProfile";
+import PatientRecordView from "./pages/patient/RecordView";
 import HospitalRegister from "./pages/hospital/HospitalRegister";
 import HospitalLogin from "./pages/hospital/HospitalLogin";
 import HospitalDashboard from "./pages/hospital/HospitalDashboard";
@@ -17,6 +18,7 @@ import QRScanner from "./pages/hospital/QRScanner";
 import PatientHistory from "./pages/hospital/PatientHistory";
 import UploadReport from "./pages/hospital/UploadReport";
 import HospitalProfile from "./pages/hospital/HospitalProfile";
+import HospitalRecordView from "./pages/hospital/RecordView";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -48,6 +50,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['patient']}>
                   <PatientProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/patient/record/:recordId" 
+              element={
+                <ProtectedRoute allowedRoles={['patient']}>
+                  <PatientRecordView />
                 </ProtectedRoute>
               } 
             />
@@ -91,6 +101,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['hospital']}>
                   <HospitalProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/hospital/record/:recordId" 
+              element={
+                <ProtectedRoute allowedRoles={['hospital']}>
+                  <HospitalRecordView />
                 </ProtectedRoute>
               } 
             />
