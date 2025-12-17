@@ -9,6 +9,7 @@ import {
   User, 
   Calendar, 
   Download, 
+  Eye,
   Clock,
   ArrowLeft,
   Upload,
@@ -319,6 +320,16 @@ const PatientHistory = () => {
                         </div>
                         
                         <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <Link to={`/hospital/record/${record.id}`}>
+                              <Eye className="w-4 h-4" />
+                              View
+                            </Link>
+                          </Button>
                           {record.file_url && (
                             <>
                               {fileCount > 1 ? (
