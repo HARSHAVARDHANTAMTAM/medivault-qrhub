@@ -38,19 +38,43 @@ const QRScanner = () => {
     };
   }, []);
 
+  const extractPatientId = (decodedText: string): string | null => {
+    // Try to parse as JSON first (new format)
+    try {
+      const data = JSON.parse(decodedText);
+      if (data.type === 'medivault_patient' && data.patientId) {
+        return data.patientId;
+      }
+    } catch {
+      // Not JSON, try other formats
+    }
+    
+    // Format: MEDIVAULT:PATIENT_ID
+    if (decodedText.startsWith('MEDIVAULT:')) {
+      return decodedText.replace('MEDIVAULT:', '');
+    }
+    
+    // Plain patient ID format (MED followed by digits)
+    if (decodedText.match(/^MED\d+$/)) {
+      return decodedText;
+    }
+    
+    return null;
+  };
+
   const handleScanResult = (decodedText: string) => {
     // Stop scanner
     if (scannerRef.current) {
       scannerRef.current.stop().then(() => {
         setScanning(false);
-        // Extract patient ID from QR data
-        // Format: MEDIVAULT:PATIENT_ID or just PATIENT_ID
-        let patientId = decodedText;
-        if (decodedText.startsWith('MEDIVAULT:')) {
-          patientId = decodedText.replace('MEDIVAULT:', '');
+        
+        const patientId = extractPatientId(decodedText);
+        if (patientId) {
+          toast.success('QR Code scanned successfully!');
+          navigate(`/hospital/patient/${patientId}`);
+        } else {
+          toast.error('Invalid QR code format');
         }
-        toast.success('QR Code scanned successfully!');
-        navigate(`/hospital/patient/${patientId}`);
       }).catch(() => {});
     }
   };
@@ -115,14 +139,13 @@ const QRScanner = () => {
       const html5QrCode = new Html5Qrcode("qr-file-reader");
       const result = await html5QrCode.scanFile(file, true);
       
-      // Extract patient ID from QR data
-      let patientId = result;
-      if (result.startsWith('MEDIVAULT:')) {
-        patientId = result.replace('MEDIVAULT:', '');
+      const patientId = extractPatientId(result);
+      if (patientId) {
+        toast.success('QR Code scanned successfully!');
+        navigate(`/hospital/patient/${patientId}`);
+      } else {
+        toast.error('Invalid QR code format');
       }
-      
-      toast.success('QR Code scanned successfully!');
-      navigate(`/hospital/patient/${patientId}`);
     } catch (error) {
       console.error('File scan error:', error);
       toast.error('Could not read QR code from image. Please try another image or use manual entry.');

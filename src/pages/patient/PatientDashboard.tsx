@@ -11,13 +11,15 @@ import {
   Download, 
   Eye, 
   Clock,
-  Building2,
   ChevronRight,
   QrCode,
-  Loader2
+  Loader2,
+  Files,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { getSignedFileUrl } from '@/lib/storage';
+import { getMultipleSignedUrls, countFiles } from '@/lib/storage';
 import { toast } from 'sonner';
 
 interface MedicalRecord {
@@ -38,23 +40,54 @@ const PatientDashboard = () => {
   const [records, setRecords] = useState<MedicalRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpandedRecords(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
 
   const handleDownload = async (record: MedicalRecord) => {
     if (!record.file_url) return;
     
     setDownloadingId(record.id);
     try {
-      const signedUrl = await getSignedFileUrl(record.file_url);
-      if (signedUrl) {
-        window.open(signedUrl, '_blank');
+      const files = await getMultipleSignedUrls(record.file_url);
+      if (files.length === 0) {
+        toast.error('Failed to generate download links');
+        return;
+      }
+      
+      if (files.length === 1) {
+        window.open(files[0].url, '_blank');
       } else {
-        toast.error('Failed to generate download link');
+        setExpandedRecords(prev => new Set(prev).add(record.id));
+        toast.success(`${files.length} files available - click individual files to download`);
       }
     } catch (error) {
       console.error('Download error:', error);
       toast.error('Failed to download file');
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+  const handleSingleFileDownload = async (fileUrl: string) => {
+    try {
+      const files = await getMultipleSignedUrls(fileUrl);
+      if (files.length > 0) {
+        window.open(files[0].url, '_blank');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download file');
     }
   };
 
@@ -171,73 +204,133 @@ const PatientDashboard = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {records.map((record, index) => (
-                <div
-                  key={record.id}
-                  className="relative pl-8 pb-8 border-l-2 border-border last:pb-0"
-                >
-                  <div className="absolute left-0 top-0 w-4 h-4 -translate-x-1/2 rounded-full medical-gradient" />
-                  
-                  <div className="p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Calendar className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {format(new Date(record.record_date), 'MMMM dd, yyyy')}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-semibold text-foreground mb-1">
-                          {record.title}
-                        </h3>
-                        {record.diagnosis && (
-                          <p className="text-muted-foreground mb-2">
-                            <span className="font-medium">Diagnosis:</span> {record.diagnosis}
-                          </p>
-                        )}
-                        {record.doctor_name && (
-                          <p className="text-sm text-muted-foreground">
-                            <span className="font-medium">Doctor:</span> {record.doctor_name}
-                          </p>
-                        )}
-                        {record.doctor_notes && (
-                          <p className="text-sm text-muted-foreground mt-2 italic">
-                            "{record.doctor_notes}"
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                        >
-                          <Link to={`/patient/record/${record.id}`}>
-                            <Eye className="w-4 h-4" />
-                            View
-                          </Link>
-                        </Button>
-                        {record.file_url && (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleDownload(record)}
-                            disabled={downloadingId === record.id}
-                          >
-                            {downloadingId === record.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Download className="w-4 h-4" />
+              {records.map((record) => {
+                const fileCount = countFiles(record.file_url);
+                const isExpanded = expandedRecords.has(record.id);
+                
+                return (
+                  <div
+                    key={record.id}
+                    className="relative pl-8 pb-8 border-l-2 border-border last:pb-0"
+                  >
+                    <div className="absolute left-0 top-0 w-4 h-4 -translate-x-1/2 rounded-full medical-gradient" />
+                    
+                    <div className="p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Calendar className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {format(new Date(record.record_date), 'MMMM dd, yyyy')}
+                            </span>
+                            {fileCount > 1 && (
+                              <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                <Files className="w-3 h-3" />
+                                {fileCount} files
+                              </span>
                             )}
-                            Download
+                          </div>
+                          <h3 className="text-lg font-semibold text-foreground mb-1">
+                            {record.title}
+                          </h3>
+                          {record.diagnosis && (
+                            <p className="text-muted-foreground mb-2">
+                              <span className="font-medium">Diagnosis:</span> {record.diagnosis}
+                            </p>
+                          )}
+                          {record.doctor_name && (
+                            <p className="text-sm text-muted-foreground">
+                              <span className="font-medium">Doctor:</span> {record.doctor_name}
+                            </p>
+                          )}
+                          {record.doctor_notes && (
+                            <p className="text-sm text-muted-foreground mt-2 italic">
+                              "{record.doctor_notes}"
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <Link to={`/patient/record/${record.id}`}>
+                              <Eye className="w-4 h-4" />
+                              View
+                            </Link>
                           </Button>
-                        )}
+                          {record.file_url && (
+                            <>
+                              {fileCount > 1 ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => toggleExpand(record.id)}
+                                >
+                                  {isExpanded ? (
+                                    <ChevronUp className="w-4 h-4 mr-1" />
+                                  ) : (
+                                    <ChevronDown className="w-4 h-4 mr-1" />
+                                  )}
+                                  {fileCount} Files
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => handleDownload(record)}
+                                  disabled={downloadingId === record.id}
+                                >
+                                  {downloadingId === record.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Download className="w-4 h-4" />
+                                  )}
+                                  Download
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Expanded Files List */}
+                      {isExpanded && record.file_url && (
+                        <div className="mt-4 pt-4 border-t border-border">
+                          <p className="text-sm font-medium text-foreground mb-3">Attached Files:</p>
+                          <div className="space-y-2">
+                            {record.file_url.split(',').map((filePath, index) => {
+                              const fileName = filePath.trim().split('/').pop() || `File ${index + 1}`;
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between p-3 rounded-lg bg-background"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <FileText className="w-4 h-4 text-primary" />
+                                    <span className="text-sm text-foreground truncate max-w-[200px]">
+                                      {fileName}
+                                    </span>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleSingleFileDownload(filePath.trim())}
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
