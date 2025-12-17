@@ -16,7 +16,9 @@ import {
   Calendar,
   Loader2,
   CheckCircle,
-  Search
+  Search,
+  X,
+  Plus
 } from 'lucide-react';
 import { z } from 'zod';
 
@@ -24,6 +26,11 @@ interface PatientInfo {
   id: string;
   full_name: string | null;
   patient_id: string | null;
+}
+
+interface FileItem {
+  id: string;
+  file: File;
 }
 
 const uploadSchema = z.object({
@@ -51,13 +58,13 @@ const UploadReport = () => {
     doctorNotes: '',
     recordDate: new Date().toISOString().split('T')[0]
   });
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<FileItem[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
-    // If patient ID is preselected, fetch patient info
     if (preselectedPatientId) {
       const fetchPatient = async () => {
         try {
@@ -119,15 +126,25 @@ const UploadReport = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      // Validate file size (max 10MB)
-      if (selectedFile.size > 10 * 1024 * 1024) {
-        toast.error('File size must be less than 10MB');
-        return;
+    const selectedFiles = Array.from(e.target.files || []);
+    
+    for (const file of selectedFiles) {
+      // Validate file size (max 10MB each)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`File "${file.name}" is too large. Max 10MB per file.`);
+        continue;
       }
-      setFile(selectedFile);
+      
+      // Add file with unique ID
+      setFiles(prev => [...prev, { id: crypto.randomUUID(), file }]);
     }
+    
+    // Reset input
+    e.target.value = '';
+  };
+
+  const removeFile = (id: string) => {
+    setFiles(prev => prev.filter(f => f.id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -158,25 +175,31 @@ const UploadReport = () => {
     }
 
     setLoading(true);
+    setUploadProgress(0);
+    
     try {
-      let fileUrl: string | null = null;
+      const uploadedUrls: string[] = [];
+      const totalFiles = files.length;
 
-      // Upload file if provided
-      if (file) {
+      // Upload all files
+      for (let i = 0; i < files.length; i++) {
+        const { file } = files[i];
         const fileExt = file.name.split('.').pop();
-        const fileName = `${selectedPatient.id}/${Date.now()}.${fileExt}`;
+        const fileName = `${selectedPatient.id}/${Date.now()}-${i}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
           .from('medical-files')
           .upload(fileName, file);
 
         if (uploadError) throw uploadError;
-
-        // Store the file path (not public URL) for secure signed URL generation
-        fileUrl = fileName;
+        
+        uploadedUrls.push(fileName);
+        setUploadProgress(Math.round(((i + 1) / totalFiles) * 50));
       }
 
-      // Create medical record
+      // Create single medical record with all file URLs combined
+      const fileUrl = uploadedUrls.length > 0 ? uploadedUrls.join(',') : null;
+      
       const { error: recordError } = await supabase
         .from('medical_records')
         .insert({
@@ -187,15 +210,16 @@ const UploadReport = () => {
           doctor_name: formData.doctorName || null,
           doctor_notes: formData.doctorNotes || null,
           record_date: formData.recordDate,
-          file_url: fileUrl
+          file_url: fileUrl,
+          description: files.length > 1 ? `${files.length} files attached` : null
         });
 
       if (recordError) throw recordError;
 
+      setUploadProgress(100);
       setUploadSuccess(true);
-      toast.success('Medical record uploaded successfully!');
+      toast.success(`Medical record with ${files.length || 0} file(s) uploaded successfully!`);
       
-      // Reset form
       setTimeout(() => {
         navigate(`/hospital/patient/${selectedPatient.patient_id}`);
       }, 2000);
@@ -218,7 +242,7 @@ const UploadReport = () => {
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Upload Successful!</h2>
             <p className="text-muted-foreground mb-4">
-              The medical record has been added to the patient's history.
+              {files.length} file(s) have been added to the patient's history.
             </p>
             <p className="text-sm text-muted-foreground">Redirecting...</p>
           </div>
@@ -245,7 +269,7 @@ const UploadReport = () => {
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Upload Medical Report</h1>
           <p className="text-muted-foreground">
-            Add a new medical record to the patient's history
+            Add medical records with multiple files in one upload
           </p>
         </div>
 
@@ -361,7 +385,7 @@ const UploadReport = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="file">Attach File (Optional)</Label>
+              <Label>Attach Files (Multiple allowed)</Label>
               <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors">
                 <input
                   type="file"
@@ -370,32 +394,77 @@ const UploadReport = () => {
                   onChange={handleFileChange}
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                   disabled={loading || !selectedPatient}
+                  multiple
                 />
                 <label htmlFor="file" className="cursor-pointer">
-                  {file ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <FileText className="w-8 h-8 text-primary" />
-                      <div className="text-left">
-                        <p className="font-medium text-foreground">{file.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        Click to upload or drag and drop
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        PDF, JPG, PNG, DOC (Max 10MB)
-                      </p>
-                    </>
-                  )}
+                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PDF, JPG, PNG, DOC (Max 10MB per file)
+                  </p>
                 </label>
               </div>
+
+              {/* File List */}
+              {files.length > 0 && (
+                <div className="space-y-2 mt-4">
+                  <p className="text-sm font-medium text-foreground">{files.length} file(s) selected</p>
+                  {files.map(({ id, file }) => (
+                    <div
+                      key={id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground truncate max-w-[200px]">
+                            {file.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFile(id)}
+                        disabled={loading}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  
+                  {/* Add more files button */}
+                  <label
+                    htmlFor="file"
+                    className="flex items-center justify-center gap-2 p-3 rounded-lg border border-dashed border-border hover:border-primary/50 cursor-pointer transition-colors"
+                  >
+                    <Plus className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Add more files</span>
+                  </label>
+                </div>
+              )}
             </div>
+
+            {loading && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Uploading...</span>
+                  <span className="text-primary font-medium">{uploadProgress}%</span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
             <Button 
               type="submit" 
@@ -412,7 +481,7 @@ const UploadReport = () => {
               ) : (
                 <>
                   <Upload className="w-5 h-5" />
-                  Upload Record
+                  Upload Record {files.length > 0 && `(${files.length} files)`}
                 </>
               )}
             </Button>

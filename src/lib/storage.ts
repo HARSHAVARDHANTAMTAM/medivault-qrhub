@@ -39,3 +39,46 @@ export const getSignedFileUrl = async (
     return null;
   }
 };
+
+/**
+ * Get signed URLs for multiple files (comma-separated)
+ * @param fileUrlString - Comma-separated file paths
+ * @param expiresIn - URL expiry time in seconds
+ * @returns Array of signed URLs
+ */
+export const getMultipleSignedUrls = async (
+  fileUrlString: string | null,
+  expiresIn: number = 3600
+): Promise<{ url: string; name: string }[]> => {
+  if (!fileUrlString) return [];
+
+  const filePaths = fileUrlString.split(',').filter(p => p.trim());
+  const results: { url: string; name: string }[] = [];
+
+  for (const filePath of filePaths) {
+    const signedUrl = await getSignedFileUrl(filePath.trim(), expiresIn);
+    if (signedUrl) {
+      // Extract filename from path
+      const fileName = filePath.split('/').pop() || 'file';
+      results.push({ url: signedUrl, name: fileName });
+    }
+  }
+
+  return results;
+};
+
+/**
+ * Check if a file_url contains multiple files
+ */
+export const hasMultipleFiles = (fileUrl: string | null): boolean => {
+  if (!fileUrl) return false;
+  return fileUrl.includes(',');
+};
+
+/**
+ * Count the number of files in a file_url string
+ */
+export const countFiles = (fileUrl: string | null): number => {
+  if (!fileUrl) return 0;
+  return fileUrl.split(',').filter(p => p.trim()).length;
+};
