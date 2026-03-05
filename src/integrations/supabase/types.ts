@@ -136,6 +136,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_approved_hospital: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "patient" | "hospital" | "admin"
