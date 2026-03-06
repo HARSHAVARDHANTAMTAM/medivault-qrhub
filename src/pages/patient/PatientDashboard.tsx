@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getMultipleSignedUrls, countFiles } from '@/lib/storage';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 interface MedicalRecord {
@@ -72,7 +73,7 @@ const PatientDashboard = () => {
         toast.success(`${files.length} files available - click individual files to download`);
       }
     } catch (error) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       toast.error('Failed to download file');
     } finally {
       setDownloadingId(null);
@@ -86,7 +87,7 @@ const PatientDashboard = () => {
         window.open(files[0].url, '_blank');
       }
     } catch (error) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       toast.error('Failed to download file');
     }
   };
@@ -105,7 +106,7 @@ const PatientDashboard = () => {
         if (error) throw error;
         setRecords(data || []);
       } catch (error) {
-        console.error('Error fetching records:', error);
+        logger.error('Error fetching records:', error);
       } finally {
         setLoading(false);
       }

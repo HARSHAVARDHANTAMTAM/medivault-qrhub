@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 /**
  * Generate a signed URL for secure file access
@@ -29,13 +30,13 @@ export const getSignedFileUrl = async (
       .createSignedUrl(filePath, expiresIn);
 
     if (error) {
-      console.error('Error generating signed URL:', error);
+      logger.error('Error generating signed URL:', error);
       return null;
     }
 
     return data.signedUrl;
   } catch (error) {
-    console.error('Error generating signed URL:', error);
+    logger.error('Error generating signed URL:', error);
     return null;
   }
 };

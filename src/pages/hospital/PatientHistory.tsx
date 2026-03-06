@@ -23,6 +23,7 @@ import {
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { getMultipleSignedUrls, countFiles } from '@/lib/storage';
+import { logger } from '@/lib/logger';
 
 interface PatientProfile {
   id: string;
@@ -87,7 +88,7 @@ const PatientHistory = () => {
         toast.success(`${files.length} files available - click individual files to download`);
       }
     } catch (error) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       toast.error('Failed to download file');
     } finally {
       setDownloadingId(null);
@@ -101,7 +102,7 @@ const PatientHistory = () => {
         window.open(files[0].url, '_blank');
       }
     } catch (error) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       toast.error('Failed to download file');
     }
   };
@@ -140,7 +141,7 @@ const PatientHistory = () => {
         setRecords(recordsData || []);
 
       } catch (error) {
-        console.error('Error fetching patient data:', error);
+        logger.error('Error fetching patient data:', error);
         toast.error('Failed to load patient data');
       } finally {
         setLoading(false);

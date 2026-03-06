@@ -21,6 +21,7 @@ import {
   Plus
 } from 'lucide-react';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 interface PatientInfo {
   id: string;
@@ -79,7 +80,7 @@ const UploadReport = () => {
             setSelectedPatient(data);
           }
         } catch (error) {
-          console.error('Error fetching patient:', error);
+          logger.error('Error fetching patient:', error);
         }
       };
       fetchPatient();
@@ -110,7 +111,7 @@ const UploadReport = () => {
         toast.error('Patient not found');
       }
     } catch (error) {
-      console.error('Search error:', error);
+      logger.error('Search error:', error);
       toast.error('Failed to search patient');
     } finally {
       setSearchLoading(false);
@@ -225,7 +226,7 @@ const UploadReport = () => {
       }, 2000);
 
     } catch (error: any) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       toast.error(error.message || 'Failed to upload record');
     } finally {
       setLoading(false);

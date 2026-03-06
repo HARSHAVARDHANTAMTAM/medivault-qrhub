@@ -8,16 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { 
-  Building2, 
-  ArrowLeft, 
-  MapPin, 
-  FileText, 
+import {
+  Building2,
+  ArrowLeft,
+  MapPin,
+  FileText,
   Save,
   Loader2,
   CheckCircle,
-  XCircle
+  XCircle,
 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 const HospitalProfile = () => {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ const HospitalProfile = () => {
       await refreshProfile();
       toast.success('Profile updated successfully!');
     } catch (error: any) {
-      console.error('Update error:', error);
+      logger.error('Update error:', error);
       toast.error(error.message || 'Failed to update profile');
     } finally {
       setLoading(false);

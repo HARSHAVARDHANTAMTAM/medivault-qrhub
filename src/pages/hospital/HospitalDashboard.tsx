@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface RecentRecord {
   id: string;
@@ -68,7 +69,7 @@ const HospitalDashboard = () => {
         setTotalPatients(uniquePatientIds.size);
 
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        logger.error('Error fetching stats:', error);
       } finally {
         setLoading(false);
       }

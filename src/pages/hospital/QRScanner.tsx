@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { QrCode, Camera, Search, ArrowLeft, RefreshCw, Upload } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { logger } from '@/lib/logger';
 
 const QRScanner = () => {
   const navigate = useNavigate();
@@ -98,7 +99,7 @@ const QRScanner = () => {
       
       setScanning(true);
     } catch (error) {
-      console.error('Scanner error:', error);
+      logger.error('Scanner error:', error);
       toast.error('Failed to start camera. Please try manual entry.');
       setHasCamera(false);
     }
@@ -110,7 +111,7 @@ const QRScanner = () => {
         await scannerRef.current.stop();
         setScanning(false);
       } catch (error) {
-        console.error('Error stopping scanner:', error);
+        logger.error('Error stopping scanner:', error);
       }
     }
   };
@@ -147,7 +148,7 @@ const QRScanner = () => {
         toast.error('Invalid QR code format');
       }
     } catch (error) {
-      console.error('File scan error:', error);
+      logger.error('File scan error:', error);
       toast.error('Could not read QR code from image. Please try another image or use manual entry.');
     } finally {
       setIsProcessingFile(false);
