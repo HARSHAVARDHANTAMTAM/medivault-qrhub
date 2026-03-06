@@ -80,7 +80,7 @@ const UploadReport = () => {
             setSelectedPatient(data);
           }
         } catch (error) {
-          console.error('Error fetching patient:', error);
+          logger.error('Error fetching patient:', error);
         }
       };
       fetchPatient();

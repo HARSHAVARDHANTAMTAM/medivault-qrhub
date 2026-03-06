@@ -69,7 +69,7 @@ const HospitalDashboard = () => {
         setTotalPatients(uniquePatientIds.size);
 
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        logger.error('Error fetching stats:', error);
       } finally {
         setLoading(false);
       }

@@ -99,7 +99,7 @@ const QRScanner = () => {
       
       setScanning(true);
     } catch (error) {
-      console.error('Scanner error:', error);
+      logger.error('Scanner error:', error);
       toast.error('Failed to start camera. Please try manual entry.');
       setHasCamera(false);
     }

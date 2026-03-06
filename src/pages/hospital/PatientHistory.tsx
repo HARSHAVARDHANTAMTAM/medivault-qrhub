@@ -88,7 +88,7 @@ const PatientHistory = () => {
         toast.success(`${files.length} files available - click individual files to download`);
       }
     } catch (error) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       toast.error('Failed to download file');
     } finally {
       setDownloadingId(null);

@@ -30,7 +30,7 @@ export const getSignedFileUrl = async (
       .createSignedUrl(filePath, expiresIn);
 
     if (error) {
-      console.error('Error generating signed URL:', error);
+      logger.error('Error generating signed URL:', error);
       return null;
     }
 

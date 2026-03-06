@@ -91,7 +91,7 @@ const PatientRecordView = () => {
         }
 
       } catch (error) {
-        console.error('Error fetching record:', error);
+        logger.error('Error fetching record:', error);
         toast.error('Failed to load record');
       } finally {
         setLoading(false);
