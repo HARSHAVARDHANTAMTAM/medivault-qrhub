@@ -36,7 +36,7 @@ export const getSignedFileUrl = async (
 
     return data.signedUrl;
   } catch (error) {
-    console.error('Error generating signed URL:', error);
+    logger.error('Error generating signed URL:', error);
     return null;
   }
 };

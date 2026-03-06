@@ -111,7 +111,7 @@ const QRScanner = () => {
         await scannerRef.current.stop();
         setScanning(false);
       } catch (error) {
-        console.error('Error stopping scanner:', error);
+        logger.error('Error stopping scanner:', error);
       }
     }
   };
@@ -148,7 +148,7 @@ const QRScanner = () => {
         toast.error('Invalid QR code format');
       }
     } catch (error) {
-      console.error('File scan error:', error);
+      logger.error('File scan error:', error);
       toast.error('Could not read QR code from image. Please try another image or use manual entry.');
     } finally {
       setIsProcessingFile(false);

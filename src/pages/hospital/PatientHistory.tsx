@@ -102,7 +102,7 @@ const PatientHistory = () => {
         window.open(files[0].url, '_blank');
       }
     } catch (error) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       toast.error('Failed to download file');
     }
   };
@@ -141,7 +141,7 @@ const PatientHistory = () => {
         setRecords(recordsData || []);
 
       } catch (error) {
-        console.error('Error fetching patient data:', error);
+        logger.error('Error fetching patient data:', error);
         toast.error('Failed to load patient data');
       } finally {
         setLoading(false);

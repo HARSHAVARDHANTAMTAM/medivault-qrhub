@@ -110,10 +110,10 @@ const UploadReport = () => {
       } else {
         toast.error('Patient not found');
       }
-    } catch (error) {
-      console.error('Search error:', error);
-      toast.error('Failed to search patient');
-    } finally {
+      } catch (error) {
+        logger.error('Search error:', error);
+        toast.error('Failed to search patient');
+      } finally {
       setSearchLoading(false);
     }
   };
@@ -226,7 +226,7 @@ const UploadReport = () => {
       }, 2000);
 
     } catch (error: any) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       toast.error(error.message || 'Failed to upload record');
     } finally {
       setLoading(false);
