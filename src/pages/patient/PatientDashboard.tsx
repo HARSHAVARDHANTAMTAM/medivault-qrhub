@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { getMultipleSignedUrls, countFiles } from '@/lib/storage';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
 interface MedicalRecord {

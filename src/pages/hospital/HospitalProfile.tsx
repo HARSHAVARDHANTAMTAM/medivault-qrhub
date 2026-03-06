@@ -17,7 +17,7 @@ import {
   Loader2,
   CheckCircle,
   XCircle
-} from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 const HospitalProfile = () => {
   const navigate = useNavigate();

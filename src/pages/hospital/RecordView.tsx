@@ -18,6 +18,7 @@ import {
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { getMultipleSignedUrls, countFiles } from '@/lib/storage';
+import { logger } from '@/lib/logger';
 
 interface MedicalRecord {
   id: string;

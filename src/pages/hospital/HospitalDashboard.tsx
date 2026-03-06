@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface RecentRecord {
   id: string;

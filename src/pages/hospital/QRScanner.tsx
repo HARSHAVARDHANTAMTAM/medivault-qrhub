@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { QrCode, Camera, Search, ArrowLeft, RefreshCw, Upload } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { logger } from '@/lib/logger';
 
 const QRScanner = () => {
   const navigate = useNavigate();

@@ -21,6 +21,7 @@ import {
   Plus
 } from 'lucide-react';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 interface PatientInfo {
   id: string;
