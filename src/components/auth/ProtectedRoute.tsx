@@ -8,10 +8,10 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  if (loading || (user && profileLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -26,7 +26,12 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
+  // No profile means no authorized role context, deny route access.
+  if (!profile) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(profile.role)) {
     // Redirect to appropriate dashboard based on role
     switch (profile.role) {
       case 'patient':
@@ -41,7 +46,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   // Check if hospital is approved
-  if (profile?.role === 'hospital' && !profile.is_approved) {
+  if (profile.role === 'hospital' && !profile.is_approved) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md p-8">
@@ -50,7 +55,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-3">Pending Approval</h2>
           <p className="text-muted-foreground">
-            Your hospital registration is pending admin approval. 
+            Your hospital registration is pending admin approval.
             You'll be able to access the system once approved.
           </p>
         </div>
