@@ -22,6 +22,8 @@ import { format } from 'date-fns';
 import { getMultipleSignedUrls, countFiles } from '@/lib/storage';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { QRCodeSVG } from 'qrcode.react';
+import { Copy, CheckCircle2 } from 'lucide-react';
 
 interface MedicalRecord {
   id: string;
@@ -42,6 +44,22 @@ const PatientDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
+
+  const qrData = JSON.stringify({
+    type: 'medivault_patient',
+    patientId: profile?.patient_id,
+    id: profile?.id,
+  });
+
+  const copyPatientId = () => {
+    if (profile?.patient_id) {
+      navigator.clipboard.writeText(profile.patient_id);
+      setCopied(true);
+      toast.success('Patient ID copied!');
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedRecords(prev => {
@@ -128,45 +146,72 @@ const PatientDashboard = () => {
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <Link
-            to="/patient/profile"
-            className="group p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-all card-shadow hover:elevated-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl medical-gradient flex items-center justify-center">
-                <QrCode className="w-6 h-6 text-primary-foreground" />
+        {/* QR Code & Patient ID */}
+        <div className="grid lg:grid-cols-3 gap-4 mb-8">
+          {/* QR Code Card */}
+          <div className="lg:col-span-2 p-6 rounded-xl bg-card border border-border card-shadow">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="p-4 bg-white rounded-2xl shadow-md shrink-0">
+                {profile?.patient_id ? (
+                  <QRCodeSVG
+                    value={qrData}
+                    size={160}
+                    level="H"
+                    includeMargin={true}
+                    bgColor="#ffffff"
+                    fgColor="#0EA5E9"
+                  />
+                ) : (
+                  <div className="w-[160px] h-[160px] flex items-center justify-center text-muted-foreground text-sm">
+                    Generating...
+                  </div>
+                )}
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                  My QR Code
-                </h3>
-                <p className="text-sm text-muted-foreground">View your unique QR</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-            </div>
-          </Link>
 
-          <Link
-            to="/patient/profile"
-            className="group p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-all card-shadow hover:elevated-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-                <User className="w-6 h-6 text-accent" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                  My Profile
-                </h3>
-                <p className="text-sm text-muted-foreground">View profile & Patient ID</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-            </div>
-          </Link>
+              <div className="flex-1 text-center sm:text-left w-full">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                  <QrCode className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold text-foreground">Your Patient QR</h2>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Show this to hospitals for instant access to your medical history
+                </p>
 
-          <div className="p-6 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="mb-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
+                    Patient ID
+                  </p>
+                  <div className="flex items-center justify-center sm:justify-start gap-2">
+                    <code className="px-3 py-2 rounded-lg bg-secondary text-foreground font-mono text-base font-semibold">
+                      {profile?.patient_id || '—'}
+                    </code>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={copyPatientId}
+                      disabled={!profile?.patient_id}
+                    >
+                      {copied ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/patient/profile">
+                    View full profile
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Records */}
+          <div className="p-6 rounded-xl bg-primary/5 border border-primary/20 flex items-center">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <FileText className="w-6 h-6 text-primary" />
