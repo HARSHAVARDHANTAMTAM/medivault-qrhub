@@ -146,8 +146,6 @@ const PatientDashboard = () => {
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {/* QR Code & Patient ID */}
         <div className="grid lg:grid-cols-3 gap-4 mb-8">
           {/* QR Code Card */}
