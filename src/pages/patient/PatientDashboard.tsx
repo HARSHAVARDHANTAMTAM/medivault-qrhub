@@ -22,6 +22,8 @@ import { format } from 'date-fns';
 import { getMultipleSignedUrls, countFiles } from '@/lib/storage';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { QRCodeSVG } from 'qrcode.react';
+import { Copy, CheckCircle2 } from 'lucide-react';
 
 interface MedicalRecord {
   id: string;
