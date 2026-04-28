@@ -44,6 +44,22 @@ const PatientDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
+  const [copied, setCopied] = useState(false);
+
+  const qrData = JSON.stringify({
+    type: 'medivault_patient',
+    patientId: profile?.patient_id,
+    id: profile?.id,
+  });
+
+  const copyPatientId = () => {
+    if (profile?.patient_id) {
+      navigator.clipboard.writeText(profile.patient_id);
+      setCopied(true);
+      toast.success('Patient ID copied!');
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedRecords(prev => {
